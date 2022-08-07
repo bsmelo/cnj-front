@@ -5,5 +5,5 @@ module.exports = defineConfig({
     sourceMap: true
   },
   transpileDependencies: true,
-  publicPath: "/"
+  publicPath: process.env.NODE_ENV === 'production' ? '/cnj-front/' : '/',
 })
