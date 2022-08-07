@@ -18,13 +18,6 @@
         class="App_Snack"
         @click="snackActive = false">{{ snackText }}</div>
     </div>
-    <div id="App_PrintContainer">
-      <canvas id="printCanvas" width="200" height="100" style="border:1px solid #000000;"></canvas>
-    </div>
-    
-    <!-- <div class="Main_SideBox">
-      <div class="Main_Credits">by TiagoXavi</div>
-    </div> -->
 
   </div>
 </template>

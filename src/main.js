@@ -5,13 +5,15 @@ import './assets/fonts/style.css';
 import store from "./store";
 import router from "./router";
 import PortalVue from 'portal-vue';
-import Vue from 'vue'
 import Vuetify from 'vuetify'
+import 'vuetify/dist/vuetify.min.css'
+
 
 import 'focus-visible';
 
 Vue.config.productionTip = false
 
+window._merge = require('lodash/merge');
 window.axios = require('axios');
 window.Vue = Vue;
 Vue.use(filters);
