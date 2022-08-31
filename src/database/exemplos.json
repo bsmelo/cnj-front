@@ -1,0 +1,59 @@
+Endpoints API:
+
+/home
+- Retorno para saber que API está funcionando;
+Resposta esperada:
+Running on 5001 port
+
+
+/api/documentos/{NOME_MODELO}
+Exemplo: http://200.137.197.234:5009/api/documentos/modelo_teste
+Resposta esperada:
+[
+    {
+        "chave_documento": "0000334-58.2014.4.03.6326_6013449_385605990_SENTENCA",
+        "descricao": "SENTENCA - 0000334-58.2014.4.03.6326",
+        "id_cluster": 11,
+        "pos_x": 3.962058782577514,
+        "pos_y": 16.232473373413086
+    },
+    {
+        "chave_documento": "0001295-29.2020.4.03.6345_6012005_385491770_PETICAO_INICIAL",
+        "descricao": "PETICAO INICIAL",
+        "id_cluster": 12,
+        "pos_x": -7.255155563354492,
+        "pos_y": 1.224050760269165
+    }
+]
+
+
+/api/processos/{NUMERO_PROCESSO}
+Exemplo: http://200.137.197.234:5009/api/processos/0001532-88.2015.5.09.0654
+Resposta esperada:
+{
+    "assunto": " INCONSISTENTE",
+    "classe": "Recurso Ordinário Trabalhista",
+    "competencia": "TRT Turmas",
+    "fonte_dados": "TRT9_PJESG",
+    "orgao_julgador": "INCONSISTENTE",
+    "orgao_julgador_colegiado": "OJC de Análise de Recurso",
+    "processo": "0001532-88.2015.5.09.0654",
+    "situacao": "Julgado"
+}
+
+/api/{NOME_MODELO}/documentos/{CHAVE_DOCUMENTO}/similares
+Exemplo: http://200.137.197.234:5009/api/modelo_teste/documentos/0001093-61.2017.5.09.0669_1404993_56936893_PETICAO_INICIAL/similares
+Resposta esperada:
+[
+    {
+        "chave_documento": "0001093-61.2017.5.09.0669_1404993_56936893_PETICAO_INICIAL",
+        "descricao": "PETICAO INICIAL",
+        "id_cluster": 8,
+        "numero_processo": "0001093-61.2017.5.09.0669",
+        "resumo_sumarizado": "Este é um resumo da petição.",
+        "score_similaridade": 0.8,
+        "texto": ""
+    }
+]
+
+

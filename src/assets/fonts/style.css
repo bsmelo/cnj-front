@@ -5,7 +5,7 @@
   font-style: normal;
 }
 
-[class^="ticon-"], [class*=" ticon-"], .material-icons {
+[class^="ticon-"], [class*=" ticon-"] {
   /* use !important to prevent issues with browser extensions that change fonts */
   font-family: 'JurisT' !important;
   speak: never;

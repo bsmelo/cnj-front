@@ -4,6 +4,8 @@ module.exports = defineConfig({
   css: {
     sourceMap: true
   },
-  transpileDependencies: true,
+  transpileDependencies: [
+    'vuetify'
+  ],
   publicPath: process.env.NODE_ENV === 'production' ? '/cnj-front/' : '/',
 })

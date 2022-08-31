@@ -1,5 +1,9 @@
 <template>
   <div class="Highcharts_Layout">
+    <div v-if="noData" class="Highcharts_Empty">
+      <div v-if="config.title" class="Highcharts_TitleEmpty">{{ config.title.text }}</div>
+      Sem dados para exibir
+    </div>
     <div :id="id" class="Highcharts_Div" />
   </div>
 </template>
@@ -38,15 +42,19 @@ export default {
       chart: null,
       chartSlidersDebounceFunction: null,
       returnedFunction: null,
+      noData: false,
+      renderCount: 0
     }
   },
   watch: {
     counter() {
       let vm = this;
-      console.log(this.counter);
       setTimeout(() => {
         vm.handleResize();
       }, 0);
+    },
+    config() {
+      this.checkEmpty();
     }
   },
   beforeMount() {
@@ -61,7 +69,7 @@ export default {
     window.addEventListener('resize', this.returnedFunction);
   },
   mounted() {
-    this.renderChart();
+    this.checkEmpty();
   },
   computed: {},
   methods: {
@@ -159,6 +167,7 @@ export default {
         series: []
       };
       // end options
+      this.renderCount++;
 
       options = window._merge(options, this.config);
 
@@ -188,6 +197,24 @@ export default {
         this.renderChart();
       }
     },
+    checkEmpty() {
+      let isEmpty = true;
+      if (this.config.series) {
+        this.config.series.map(x => {
+          if (x.data && x.data.length > 0) isEmpty = false;
+        })
+      }
+      if (!isEmpty) {
+        this.noData = false;
+        this.$nextTick().then(() => {
+          // if (this.chart) this.handleResize();
+          // else this.renderChart();
+          this.renderChart();
+        })        
+      } else {
+        this.noData = true;
+      }
+    },
   },
 }
 </script>
@@ -199,6 +226,22 @@ export default {
 .Highcharts_Div {
   height: 100%;
   width: 100%;
+}
+.Highcharts_Empty {
+  height: 400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  font-size: 30px;
+  flex-grow: 1;
+}
+.Highcharts_TitleEmpty {
+  font-size: 20px;
+  margin-bottom: 50px;
+}
+.Highcharts_Empty ~ .Highcharts_Div {
+  display: none;
 }
 
 
@@ -254,5 +297,8 @@ svg.highcharts-root .highcharts-tooltip tspan[style*="color:"] {
 }
 .highcharts-menu-item {
   transition-duration: 0.05s;
+}
+.highcharts-point {
+  stroke-width: 0px !important;
 }
 </style>
