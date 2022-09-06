@@ -12,6 +12,7 @@
     "core-js": "^3.8.3",
     "focus-visible": "^5.2.0",
     "highcharts": "^10.2.0",
+    "keycloak-js": "^19.0.1",
     "lodash": "^4.17.21",
     "moment": "^2.29.4",
     "portal-vue": "^2.1.7",
