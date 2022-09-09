@@ -47,29 +47,29 @@ keycloak.init({ onLoad: initOptions.onLoad }).then((auth) => {
     window.location.reload();
   } else {
     console.log("Authenticated");
+    window.kc = keycloak;
+    axios.defaults.headers.common['Authorization'] = `Bearer ${keycloak.token}`;
 
     new Vue({
       store,
       router,
       vuetify,
-      render: h => h(App, { props: { keycloak: keycloak } }),
+      render: h => h(App),
+      // TODO: Existem outras páginas? Se sim, todas deveriam checar if (keycloak.authenticated), talvez por meio de um interceptor
     }).$mount('#app')
   }
 
   // Token Refresh
   setInterval(() => {
     keycloak.updateToken(70).then((refreshed) => {
-      if (refreshed) {
-        console.log('Token refreshed: ' + refreshed);
-      } else {
-        console.log('Token not refreshed, still valid for '
-          + Math.round(keycloak.tokenParsed.exp + keycloak.timeSkew - new Date().getTime() / 1000) + ' seconds');
-      }
+      console.log('Token refreshed? ' + refreshed);
     }).catch(() => {
       console.log('Failed to refresh token');
+      keycloak.clearToken();
+      axios.defaults.headers.common['Authorization'] = undefined;
     });
   }, 6000)
 
 }).catch(() => {
-  console.log("Authenticated Failed");
+  console.log("Authentication Failed");
 });
