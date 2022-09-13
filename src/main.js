@@ -20,24 +20,28 @@ window.Vue = Vue;
 Vue.use(filters);
 Vue.use(PortalVue);
 
-let keycloak_url = 'https://sso.cloud.pje.jus.br/'
+let KEYCLOAK_URL = 'https://sso.cloud.pje.jus.br/'
+let CHECK_TOKEN_EXPIRATION_INTERVAL = 5 * 60 * 1000; // every 5 minutes (in ms)
+let MIN_TOKEN_VALIDITY = 10 * 60 * 1000; // 10 minutes
 if (process.env.NODE_ENV === 'production') {
   Vue.preUrl = "http://200.137.197.234:5009/api"; // FIXME
-  keycloak_url = 'https://sso.cloud.pje.jus.br/'
-
+  KEYCLOAK_URL = 'https://sso.cloud.pje.jus.br/'
+  
 } else if (process.env.NODE_ENV === 'staging') {
   // Homologação
   Vue.preUrl = "http://200.137.197.234:5009/api";
-  keycloak_url = 'https://sso.stg.cloud.pje.jus.br/'
-
+  KEYCLOAK_URL = 'https://sso.stg.cloud.pje.jus.br/'
+  
 } else {
   // Desenvolvimento (local)
   Vue.preUrl = "http://localhost:5009/api";
-  keycloak_url = 'http://localhost:8585/'
+  KEYCLOAK_URL = 'http://localhost:8585/'
+  CHECK_TOKEN_EXPIRATION_INTERVAL = 10 * 1000; // every 10 seconds (in ms)
+  MIN_TOKEN_VALIDITY = 20; // 20 seconds
 }
 
 let initOptions = {
-  url: keycloak_url, realm: 'pdpj', clientId: 'sas-frontend', onLoad: 'login-required'
+  url: KEYCLOAK_URL, realm: 'pdpj', clientId: 'sas-frontend', onLoad: 'login-required'
 }
 
 let keycloak = new Keycloak(initOptions);
@@ -61,14 +65,21 @@ keycloak.init({ onLoad: initOptions.onLoad }).then((auth) => {
 
   // Token Refresh
   setInterval(() => {
-    keycloak.updateToken(70).then((refreshed) => {
-      console.log('Token refreshed? ' + refreshed);
+    keycloak.updateToken(MIN_TOKEN_VALIDITY).then((refreshed) => {
+      if (refreshed) {
+        console.log('Token refreshed');
+      }
     }).catch(() => {
       console.log('Failed to refresh token');
       keycloak.clearToken();
       axios.defaults.headers.common['Authorization'] = undefined;
     });
-  }, 6000)
+  }, CHECK_TOKEN_EXPIRATION_INTERVAL)
+  
+  keycloak.onAuthLogout = () => {
+    console.log('onAuthLogout');
+    window.location.reload();
+  }
 
 }).catch(() => {
   console.log("Authentication Failed");
