@@ -17,7 +17,7 @@
       <div class="Main_Mid">
         <div class="Main_Left DarkScroll">
           <div class="Main_LeftUp">
-            <div class="Main_TopTile">Projeto CNJ UFG</div>
+            <div class="Main_TopTile">Projeto SAS</div>
           </div>
           <div class="Main_LeftStats">
             <v-btn dark large
@@ -29,7 +29,7 @@
           </div>
           <div class="Main_LeftTitle">
             <div>Lista de clusters</div>
-            <div class="Main_RightItem Main_RightSub">Documentos: {{ docsCl.length }}</div>
+            <div class="Main_RightItem Main_RightSub">Documentos: {{ nDocumentosFiltrado }}</div>
           </div>
 
           <v-expansion-panels>
@@ -44,6 +44,7 @@
                   <div
                     v-for="doc in cluster.docs"
                     class="Main_RightItem Main_ClusterDetailText D_Link"
+                    @mouseenter="highlightPath(doc.chave_documento)"
                     @click="loadDetail({ name: doc.chave_documento })">{{ doc.descricao }}</div>
                 </div>
               </v-expansion-panel-content>
@@ -99,8 +100,8 @@
                 hide-details
                 filled
                 clearable
-                disabled
-                label="Classe" />
+                label="Classe"
+                @change="changedClass()" />
             </div>
           </div>
           <div class="Main_CenterChart">
@@ -127,9 +128,26 @@
                 <span class="Main_RightSub">Processo: </span>
                 <span>{{ docSelected.numero_processo }}</span>
               </button>
-              <div class="Main_RightItem">
-                <span class="Main_RightSub">Cluster: </span>
+              <v-btn
+                icon text dark small
+                @click="">
+                <i class="ticon-contract Main_SendChartIcon" aria-hidden="true"/>
+              </v-btn>
+              <div class="Main_RightItem Main_ClusterRateBox">
+                <span class="Main_RightSub">Cluster:&nbsp;</span>
                 <span>#{{ docSelected.id_cluster }}</span>
+                <span class="Main_RightStarsBox">
+                  <v-rating
+                    empty-icon="star_outline"
+                    full-icon="star"
+                    half-icon="$mdStarHalfFull"
+                    color="yellow"
+                    background-color="#747400"
+                    hover
+                    length="5"
+                    size="18"
+                  ></v-rating>
+                </span>
               </div>
               <div v-if="procSelected" class="Main_ProcLayout">
                 <div class="Main_RightItem">
@@ -177,13 +195,12 @@
                   <div class="Main_TabBox">
                     <div class="Main_RightItem">
                       <div class="Main_RightSub">Resumo: </div>
-                      <div class="Main_RightResumoText">{{ docSelected.resumo_sumarizado }}</div>
+                      <div class="Main_RightResumoText">{{ docResumo }}</div>
                     </div>
                     <div class="D_Center" style="margin-top: 20px;">
                       <v-btn dark
-                        @click="">
+                        @click="inteiroDialog = true;">
                         <span>Ver texto completo</span>
-                        <i class="ticon-internal" aria-hidden="true"/>
                       </v-btn>
                     </div>
                   </div>
@@ -191,44 +208,56 @@
 
                 <v-tab-item value="tab-2">
                   <div>
-                    <div class="Main_SimilarList">
+                      <!-- v-if="detailLoading" -->
+                    <BaseContentLoader
+                      v-if="detailLoading"
+                      style="padding: 10px 10px 10px 20px;"
+                      type="block"
+                      count="5" />
+
+                    <div v-else class="Main_SimilarList">
+
+                      <div class="Main_SimilarExport">
+                        <v-btn dark large
+                          color="blue-grey darken-4"
+                          @click="">
+                          <span>Exportar TXT ou JSON</span>
+                          <i class="ticon-download Icon_Button_Right" aria-hidden="true"/>
+                        </v-btn>
+                      </div>
+                      
                       <div v-for="(item, ix) in documentosSimilares" class="Main_SimilarItem">
                         <div class="Main_SimilarTop">
                           <div class="Main_SimilarLeft">
-                            <div class="Main_SimilarDoc Main_RightItem">
-                              <span>{{ item.descricao }} </span>
-                              <span class="Main_RightScore">{{ item.score_similaridade * 100 }}%</span>
+                            <div class="Main_RightTitleBox">
+                              <button
+                                class="D_Link Main_RightTitleProc"
+                                @click="loadProcessoSimilar(item.numero_processo); similarProcDialog = true;">
+                                <span>{{ item.numero_processo }}</span>
+                              </button>
                               <v-btn
                                 icon text dark small
+                                class="Main_SimilarCopyButton"
                                 @click="">
-                                <i class="ticon-chart Main_SendChartIcon" aria-hidden="true"/>
+                                <i class="ticon-contract Main_SendChartIcon" aria-hidden="true"/>
                               </v-btn>
+
                             </div>
-                            <button
-                              class="D_Link Main_RightTitleProc Main_SimilarProc"
-                              @click="loadProcesso(item.numero_processo); dialogProcModel = true;">
-                              <span>{{ item.numero_processo }}</span>
-                            </button>
+                            <div class="Main_SimilarDoc Main_RightItem Main_SimilarProc">
+                              <span>{{ item.descricao }} </span>
+                              <span class="Main_RightScore">{{ Math.round(item.score_similaridade * 100) }}%</span>
+                            </div>
                           </div>
-                          <div class="Main_SimilarRight">
+                          <!-- <div class="Main_SimilarRight">
                             <v-btn
                               icon text dark
                               @click="expandSimilar(ix)">
                               <i class="ticon-angle-down Main_SimilarExpand" aria-hidden="true"/>
                             </v-btn>
-                          </div>
-                        </div>
-                        <div class="Main_SimilarBottom">
-                          <v-expansion-panels>
-                            <v-expansion-panel v-model="item.expanded" expand>
-                              <v-expansion-panel-content>
-                                <template slot="header"></template>
-                                <div class="Main_">Test</div>
-                              </v-expansion-panel-content>
-                            </v-expansion-panel>
-                          </v-expansion-panels>
+                          </div> -->
                         </div>
                       </div>
+
                     </div>
                   </div>
                 </v-tab-item>
@@ -304,6 +333,75 @@
           </div>
         </div>
       </v-dialog>
+
+      <v-dialog
+        v-model="similarProcDialog"
+        max-width="500">
+        <div class="D_Dialog">
+          <div v-if="similarProc" class="Main_ProcLayout">
+            <div class="Main_RightTitle">{{ similarProc.processo }}</div>
+
+
+            <div class="Main_RightItem">
+              <span class="Main_RightSub">Órgão julgador: </span>
+              <span>{{ similarProc.orgao_julgador }}</span>
+            </div>
+            <div class="Main_RightItem">
+              <span class="Main_RightSub">Órgão julgador colegiado: </span>
+              <span>{{ similarProc.orgao_julgador_colegiado }}</span>
+            </div>
+            <div class="Main_RightItem">
+              <span class="Main_RightSub">Natureza: </span>
+              <span>{{ similarProc.natureza }}</span>
+            </div>
+            <div class="Main_RightItem">
+              <span class="Main_RightSub">Situação: </span>
+              <span>{{ similarProc.situacao }}</span>
+            </div>
+            <div class="Main_RightItem">
+              <span class="Main_RightSub">Classe: </span>
+              <span>{{ similarProc.classe }}</span>
+            </div>
+            <div class="Main_RightItem">
+              <span class="Main_RightSub">Instância: </span>
+              <span>{{ similarProc.instancia }}</span>
+            </div>
+            <div class="Main_RightItem">
+              <span class="Main_RightSub">Assunto: </span>
+              <span>{{ similarProc.assunto }}</span>
+            </div>  
+            <div class="Main_RightItem">
+              <span class="Main_RightSub">Competência: </span>
+              <span>{{ similarProc.competencia }}</span>
+            </div>
+            <div class="Main_RightItem">
+              <span class="Main_RightSub">Fonte de dados: </span>
+              <span>{{ similarProc.fonte_dados }}</span>
+            </div>
+            <div class="Main_RightItem">
+              <span class="Main_RightSub">Assuntos: </span>
+              <div v-for="item in similarProc.lista_assuntos" class="Main_RightListString">
+                <span>{{ item }}</span>
+              </div>
+            </div>
+            <div class="Main_RightItem">
+              <span class="Main_RightSub">Partes: </span>
+              <div v-for="item in similarProc.lista_tipo_partes" class="Main_RightListString">
+                <span class="Main_RightParteLabel">{{ item[0] }}: </span>
+                <span class="Main_RightParteValue">{{ item[1] }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </v-dialog>
+
+      <v-dialog
+        v-model="inteiroDialog"
+        max-width="800">
+        <div class="D_Dialog">
+          <div class="Main_InteiroText">{{ inteiro }}</div>
+        </div>
+      </v-dialog>
     </div>
   </div>
 </template>
@@ -311,12 +409,15 @@
 <script>
 // import BaseDialog from './BaseDialog.vue'
 import dados from '../database/dados.json'
+import resumos from '../database/resumos.json'
 import Highcharts from './Highcharts.vue'
+import BaseContentLoader from './BaseContentLoader.vue';
 
 export default {
   name: 'Main',
   components: {
-    Highcharts
+    Highcharts,
+    BaseContentLoader
   },
   props: {
     test: {
@@ -333,16 +434,26 @@ export default {
       mainChartOptions: {},
       docSelected: null,
       detailLoading: false,
+      similarProc: null,
+      similarProcLoading: false,
+      similarProcDialog: false,
       procSelected: null,
       procLoading: false,
       counter: 0,
-      modeloModel: "modelo_teste",
-      modelosList: ["modelo_teste", "Modelo 2", "Modelo 3"],
+      modeloModel: "KMeans-labse-mean_tokens",
+      modelosList: ["KMeans-labse-mean_tokens", "Modelo 2", "Modelo 3"],
       classeModel: null,
-      classeList: ["Recurso Ordinário Trabalhista", "Descontos Salariais - Devolução", "Procedimento do Juizado Especial Cível"],
+      classeList: [],
       dialogProcModel: false,
       documentosSimilares: [],
-      searchModel: null
+      searchModel: null,
+      resumos,
+      nDocumentosFiltrado: 0,
+      docResumo: null,
+      docResumoLoading: false,
+      inteiro: null,
+      inteiroLoading: false,
+      inteiroDialog: false
     }
   },
   watch: {},
@@ -350,12 +461,27 @@ export default {
     this.loadClusters();
   },
   mounted() {},
-  computed: {},
+  computed: {
+    // docResumo() {
+    //   if (this.docSelected && !this.docSelected.isnull) {
+    //     let resumo = this.resumos.find(x => x.chave_documento === this.docSelected.chave_documento)
+    //     if (resumo) {
+    //       return resumo.resumo
+    //     } else {
+    //       return "Resumo não encontrado"
+    //     }
+    //   } else {
+    //     return ""
+    //   }
+    // }
+  },
   methods: {
     prepareForChart(arrDados) {
       let series = [];
+      this.nDocumentosFiltrado = arrDados.length;
 
       arrDados.map((x, ix) => {
+        if (ix === 0) return;
         let inSeries = series.find(y => y.name === `${x.id_cluster}`)
         if (!inSeries) {
           series.push({ name: `${x.id_cluster}` });
@@ -365,8 +491,8 @@ export default {
           inSeries.data = [];
         }
         inSeries.data.push({
-            x: x.pos_x,
-            y: x.pos_y,
+            x: Number(x.pos_x),
+            y: Number(x.pos_y),
             name: x.chave_documento,
             custom: x
         })
@@ -395,6 +521,7 @@ export default {
       .then(res => {
         this.docsCl = res.data;
         this.prepareForChart(this.docsCl);
+        this.resolveClasses();
       })
       .catch(error => {
         console.log(error);
@@ -402,6 +529,26 @@ export default {
       .then(() => {
         this.docsClLoading = false;
       });
+
+    },
+    resolveClasses() {
+      let result = [];
+      this.docsCl.map(x => {
+        result.push(x.classe);
+      })
+      result.sort((a, b) => a.localeCompare(b))
+      
+      this.classeList = [...new Set(result)];
+    },
+    changedClass() {
+      let docsFiltered = [];
+      if (this.classeModel) {
+        docsFiltered = this.docsCl.filter(x => x.classe === this.classeModel);
+      } else {
+        docsFiltered = this.docsCl;
+      }
+      
+      this.prepareForChart(docsFiltered);
 
     },
     loadDetail(e) {
@@ -423,7 +570,9 @@ export default {
       this.detailLoading = true;
       this.loadProcesso(this.docSelected.numero_processo);
 
+      // let temp = "KMeans-labse-mean_tokens";
       let temp = "KMeans-labse-mean_tokens";
+      // let temp = "modelo_teste";
 
       axios.get(Vue.preUrl + `/${temp}/documentos/${e.name}/similares`)
       .then(res => {
@@ -434,6 +583,32 @@ export default {
       })
       .then(() => {
         this.detailLoading = false;
+      });
+
+      this.docResumo = null;
+      this.docResumoLoading = true;
+      axios.get(Vue.preUrl + `/documentos/${e.name}/resumo`)
+      .then(res => {
+        this.docResumo = res.data;
+      })
+      .catch(error => {
+        console.log(error);
+      })
+      .then(() => {
+        this.docResumoLoading = false;
+      });
+
+      this.inteiro = null;
+      this.inteiroLoading = true;
+      axios.get(Vue.preUrl + `/documentos/${e.name}/inteiro_teor`)
+      .then(res => {
+        this.inteiro = res.data;
+      })
+      .catch(error => {
+        console.log(error);
+      })
+      .then(() => {
+        this.inteiroLoading = false;
       });
 
 
@@ -457,6 +632,28 @@ export default {
       })
       .then(() => {
         this.procLoading = false;
+      });
+
+    },
+    loadProcessoSimilar(proc) {
+      let vm = this;
+      this.similarProcLoading = true;
+
+      axios.get(Vue.preUrl + `/processos/${proc}`)
+      .then(res => {
+        vm.similarProc = res.data;
+
+        Object.keys( vm.similarProc ).forEach(function (item) {
+          if (typeof vm.similarProc[item] === 'string' && vm.similarProc[item].includes("INCONSISTENTE") || vm.similarProc[item] === null) {
+            vm.similarProc[item] = "-"
+          }
+        })
+      })
+      .catch(error => {
+        console.log(error);
+      })
+      .then(() => {
+        this.similarProcLoading = false;
       });
 
     },
@@ -485,8 +682,21 @@ export default {
 
       if (doc) {
         this.loadDetail({ name: doc.chave_documento });
+        this.highlightPath(doc.chave_documento);
       } else {
         this.loadDetail({ name: null, proc: this.searchModel })
+      }
+    },
+    highlightPath(id) {
+      document.querySelectorAll(`.Main_HighlightPoint`).forEach(x => {
+        x.classList.remove("Main_HighlightPoint");
+      });
+
+      
+      let path = document.querySelector(`.highcharts-markers path[aria-label*="${id}"]`);
+      // console.log(path);
+      if (path) {
+        path.classList.add("Main_HighlightPoint");
       }
     }
   },
@@ -621,7 +831,7 @@ body {
   height: 100%;
   max-height: 100%;
   padding: 20px;
-  overflow-y: auto;
+  overflow-y: scroll;
 }
 .Main_RightTitle {
   word-break: break-word;
@@ -646,6 +856,7 @@ body {
   padding: 6px 9px;
   background-color: #ffffff1a;
   border-radius: 20px;
+  color: white;
 }
 .Main_Empty {
   text-align: center;
@@ -694,11 +905,16 @@ body {
   padding: 20px;
 }
 .Main_SendChartIcon {
-  font-size: 21px;
+  font-size: 15px;
   color: var(--d-text);
 }
+.Main_RightStarsBox {
+  display: inline-flex;
+  margin-left: 5px;
+}
 .Main_SimilarItem {
-  padding: 20px 10px 20px 20px;
+  padding: 10px 10px 10px 20px;
+  box-shadow: inset 0px -1px 0px 0px #ffffff14;
 }
 .Main_SimilarTop {
   display: flex;
@@ -748,26 +964,54 @@ body {
   text-overflow: ellipsis;
   cursor: pointer;
 }
-
+.Main_SimilarExport {
+  display: flex;
+  justify-content: center;
+  margin: 20px 0 10px 0;
+}
+.Main_ClusterRateBox {
+  display: flex;
+  align-items: center;
+}
+.Main_SimilarCopyButton {
+  opacity: 0;
+  transition: 0.1s;
+}
+.Main_SimilarItem:hover .Main_SimilarCopyButton {
+  opacity: 1;
+}
+.Main_HighlightPoint {
+  stroke: white;
+  stroke-width: 15px !important;
+  stroke-opacity: 0.5;
+  stroke-linejoin: round;
+}
+.Main_InteiroText {
+  color: #b3b3b3;
+}
 
 
 textarea::-webkit-scrollbar,
 .DarkScroll::-webkit-scrollbar,
+.v-dialog::-webkit-scrollbar,
 html::-webkit-scrollbar {
   width: 18px;
 }
 textarea::-webkit-scrollbar-track,
 .DarkScroll::-webkit-scrollbar-track,
+.v-dialog::-webkit-scrollbar-track,
 html::-webkit-scrollbar-track {
   background-color: #0002;
 }
 textarea::-webkit-scrollbar-thumb,
 .DarkScroll::-webkit-scrollbar-thumb,
+.v-dialog::-webkit-scrollbar-thumb,
 html::-webkit-scrollbar-thumb {
   background-color: #555;
 }
 textarea::-webkit-scrollbar-corner,
 .DarkScroll::-webkit-scrollbar-corner,
+.v-dialog::-webkit-scrollbar-corner,
 html::-webkit-scrollbar-corner {
   background-color: #222;
 }
@@ -841,5 +1085,8 @@ html::-webkit-scrollbar-corner {
 }
 .theme--dark.v-expansion-panels .v-expansion-panel-header .v-expansion-panel-header__icon .v-icon {
   color: var(--d-text);
+}
+.Main_Layout .v-rating .v-icon {
+  padding: 0.2rem;
 }
 </style>
