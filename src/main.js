@@ -36,8 +36,6 @@ if (process.env.NODE_ENV === 'production') {
   // Desenvolvimento (local)
   Vue.preUrl = "http://localhost:5009/api";
   KEYCLOAK_URL = 'http://localhost:8585/'
-  CHECK_TOKEN_EXPIRATION_INTERVAL = 10 * 1000; // every 10 seconds (in ms)
-  MIN_TOKEN_VALIDITY = 20; // 20 seconds
 }
 
 let initOptions = {
