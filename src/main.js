@@ -38,6 +38,9 @@ if (process.env.NODE_ENV === 'production') {
   KEYCLOAK_URL = 'http://localhost:8585/'
 }
 
+Vue.preUrl = process.env.VUE_APP_BACKEND_URL ? process.env.VUE_APP_BACKEND_URL : Vue.preUrl
+KEYCLOAK_URL = process.env.VUE_APP_KEYCLOAK_URL ? process.env.VUE_APP_KEYCLOAK_URL : KEYCLOAK_URL
+
 let initOptions = {
   url: KEYCLOAK_URL, realm: 'pdpj', clientId: 'sas-frontend', onLoad: 'login-required'
 }
