@@ -20,26 +20,21 @@ window.Vue = Vue;
 Vue.use(filters);
 Vue.use(PortalVue);
 
-let KEYCLOAK_URL = 'https://sso.cloud.pje.jus.br/'
+let KEYCLOAK_URL = process.env.VUE_APP_KEYCLOAK_URL + "/"
+Vue.preUrl = process.env.VUE_APP_BACKEND_URL + "/api"
+
 let CHECK_TOKEN_EXPIRATION_INTERVAL = 5 * 60 * 1000; // every 5 minutes (in ms)
 let MIN_TOKEN_VALIDITY = 10 * 60 * 1000; // 10 minutes
-if (process.env.NODE_ENV === 'production') {
-  Vue.preUrl = "http://200.137.197.234:5009/api"; // FIXME
-  KEYCLOAK_URL = 'https://sso.cloud.pje.jus.br/'
-  
-} else if (process.env.NODE_ENV === 'staging') {
-  // Homologação
-  Vue.preUrl = "http://200.137.197.234:5009/api";
-  KEYCLOAK_URL = 'https://sso.stg.cloud.pje.jus.br/'
-  
-} else {
-  // Desenvolvimento (local)
-  Vue.preUrl = "http://localhost:5009/api";
-  KEYCLOAK_URL = 'http://localhost:8585/'
-}
 
-Vue.preUrl = process.env.VUE_APP_BACKEND_URL ? process.env.VUE_APP_BACKEND_URL : Vue.preUrl
-KEYCLOAK_URL = process.env.VUE_APP_KEYCLOAK_URL ? process.env.VUE_APP_KEYCLOAK_URL : KEYCLOAK_URL
+/*
+console.log(process.env)
+console.log("Using",
+    " NODE_ENV=", process.env.NODE_ENV,
+    //" PORT=", PORT,
+    " BACKEND_URL=", Vue.preUrl,
+    " KEYCLOAK_URL=", KEYCLOAK_URL,
+)
+*/
 
 let initOptions = {
   url: KEYCLOAK_URL, realm: 'pdpj', clientId: 'sas-frontend', onLoad: 'login-required'
