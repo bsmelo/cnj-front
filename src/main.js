@@ -21,7 +21,7 @@ Vue.use(filters);
 Vue.use(PortalVue);
 
 let KEYCLOAK_URL = process.env.VUE_APP_KEYCLOAK_URL + "/"
-Vue.preUrl = process.env.VUE_APP_BACKEND_URL + "/api"
+Vue.preUrl = process.env.VUE_APP_WEBAPI_URL + "/api"
 
 let CHECK_TOKEN_EXPIRATION_INTERVAL = 5 * 60 * 1000; // every 5 minutes (in ms)
 let MIN_TOKEN_VALIDITY = 10 * 60 * 1000; // 10 minutes
